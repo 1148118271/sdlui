@@ -46,15 +46,20 @@ int main(int argc, char* argv[]) {
                 keep_going = keep_going && (event.key.key != SDLK_ESCAPE);
                 break;
             }
-            case SDL_EVENT_WINDOW_EXPOSED: {
-                SDL_SetRenderDrawColor(renderer, 16, 0, 16, 255);
-                SDL_RenderClear(renderer);
-                SDL_RenderPresent(renderer);
-                break;
-            }
+//            case SDL_EVENT_WINDOW_EXPOSED: {
+//                SDL_SetRenderDrawColor(renderer, 16, 0, 16, 255);
+//                SDL_RenderClear(renderer);
+//                SDL_RenderPresent(renderer);
+//                break;
+//            }
         }
+
+        SDL_SetRenderDrawColor(renderer, 16, 0, 16, 255);
+        SDL_RenderClear(renderer);
         myButton.handleEvent(event);
         myButton.draw(renderer);
+
+        SDL_RenderPresent(renderer);
     }
 
     SDL_DestroyRenderer(renderer);

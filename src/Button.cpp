@@ -32,10 +32,8 @@ void Button::draw(SDL_Renderer *renderer) {
     SDL_Color color = normalColor_;
     if (pressed) color = pressedColor_;
     else if (hovered) color = hoverColor_;
-
     SDL_SetRenderDrawColor(renderer, color.r, color.g, color.b, color.a);
     SDL_RenderFillRect(renderer, &rect_);
-    SDL_RenderPresent(renderer);
 }
 
 bool Button::contains(float x, float y) const {
