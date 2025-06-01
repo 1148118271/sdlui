@@ -14,10 +14,14 @@ public:
 
     SDL_Renderer *renderer_;
 
-    SDL_FRect rect_;
-    SDL_Color normalColor_{100, 100, 255, 255};
-    SDL_Color hoverColor_{120, 120, 255, 255};
-    SDL_Color pressedColor_{80, 80, 200, 255};
+    SDL_FColor normalColor_{5.0f, 50.0f, 255.0f, 1.0f};
+    SDL_FColor hoverColor_{120.0f, 120.0f, 255.0f, 255.0f};
+    SDL_FColor pressedColor_{80.0f, 80.0f, 200.0f, 255.0f};
+
+    float x_;
+    float y_;
+    float w_;
+    float h_;
 
     bool hovered = false;
     bool pressed = false;

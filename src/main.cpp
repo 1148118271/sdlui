@@ -27,10 +27,12 @@ int main(int argc, char* argv[]) {
         return -1;
     }
 
-    Button myButton(300, 250, 200, 80, renderer);
+    Button myButton(10, 10, 50, 10, renderer);
     myButton.onClick = []() {
         std::cout << "Button clicked!" << std::endl;
     };
+
+    float x_ = 10, y_ = 10, w_ = 50, h_ = 10;
 
     SDL_Event event{};
     bool keep_going = true;
@@ -46,20 +48,40 @@ int main(int argc, char* argv[]) {
                 keep_going = keep_going && (event.key.key != SDLK_ESCAPE);
                 break;
             }
-//            case SDL_EVENT_WINDOW_EXPOSED: {
-//                SDL_SetRenderDrawColor(renderer, 16, 0, 16, 255);
-//                SDL_RenderClear(renderer);
-//                SDL_RenderPresent(renderer);
-//                break;
-//            }
+            case SDL_EVENT_WINDOW_EXPOSED: {
+                SDL_SetRenderDrawColor(renderer, 16, 0, 16, 255);
+                SDL_RenderClear(renderer);
+                myButton.draw(renderer);
+
+
+
+//
+//                SDL_Vertex vertex[6] = {
+//                        SDL_Vertex{ .position = {x_, y_},               .color = {16.0f, 0.0f, 16.0f, 16.0f} },
+//                        SDL_Vertex{ .position = {x_, y_ + h_},          .color = {16.0f, 0.0f, 16.0f, 16.0f} },
+//                        SDL_Vertex{ .position = {x_ + w_, y_},          .color = {16.0f, 0.0f, 16.0f, 16.0f} },
+//                        SDL_Vertex{ .position = {x_, y_ + h_},          .color = {16.0f, 0.0f, 16.0f, 16.0f} },
+//                        SDL_Vertex{ .position = {x_ + w_, y_},          .color = {16.0f, 0.0f, 16.0f, 16.0f} },
+//                        SDL_Vertex{ .position = {x_ + w_, y_ + h_},     .color = {16.0f, 0.0f, 16.0f, 16.0f} },
+//                };
+//
+//                SDL_SetRenderDrawBlendMode(renderer, SDL_BLENDMODE_BLEND);
+//                SDL_RenderGeometry(renderer, nullptr, vertex, 6, nullptr, 0);
+//
+//
+
+
+
+                SDL_RenderPresent(renderer);
+                break;
+            }
         }
-
-        SDL_SetRenderDrawColor(renderer, 16, 0, 16, 255);
-        SDL_RenderClear(renderer);
-        myButton.handleEvent(event);
-        myButton.draw(renderer);
-
-        SDL_RenderPresent(renderer);
+//        myButton.handleEvent(event);
+//
+//        SDL_SetRenderDrawColor(renderer, 16, 0, 16, 255);
+//        SDL_RenderClear(renderer);
+//        myButton.draw(renderer);
+//        SDL_RenderPresent(renderer);
     }
 
     SDL_DestroyRenderer(renderer);

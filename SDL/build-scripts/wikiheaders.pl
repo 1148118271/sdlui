@@ -43,6 +43,7 @@ my $wikiurl = 'https://wiki.libsdl.org';
 my $bugreporturl = 'https://github.com/libsdl-org/sdlwiki/issues/new';
 my $srcpath = undef;
 my $wikipath = undef;
+my $wikireadmesubdir = 'README';
 my $warn_about_missing = 0;
 my $copy_direction = 0;
 my $optionsfname = undef;
@@ -423,11 +424,7 @@ sub dewikify_chunk {
             $str .= "\n```$codelang\n$code\n```\n";
         }
     } elsif ($dewikify_mode eq 'manpage') {
-        # make sure these can't become part of roff syntax.
-        $str =~ s/\./\\[char46]/gms;
-        $str =~ s/"/\\(dq/gms;
-        $str =~ s/'/\\(aq/gms;
-
+        $str =~ s/\./\\[char46]/gms;  # make sure these can't become control codes.
         if ($wikitype eq 'mediawiki') {
             # Dump obvious wikilinks.
             if (defined $apiprefixregex) {
@@ -452,52 +449,33 @@ sub dewikify_chunk {
             # bullets
             $str =~ s/^\* /\n\\\(bu /gm;
         } elsif ($wikitype eq 'md') {
-            # bullets
-            $str =~ s/^\- /\n\\(bu /gm;
-            # merge paragraphs
-            $str =~ s/^[ \t]+//gm;
-            $str =~ s/([^\-\n])\n([^\-\n])/$1 $2/g;
-            $str =~ s/\n\n/\n.PP\n/g;
-
             # Dump obvious wikilinks.
             if (defined $apiprefixregex) {
-                my $apr = $apiprefixregex;
-                if(!($apr =~ /\A\(.*\)\Z/s)) {
-                    # we're relying on the apiprefixregex having a capturing group.
-                    $apr = "(" . $apr . ")";
-                }
-                $str =~ s/(\S*?)\[\`?($apr[a-zA-Z0-9_]+)\`?\]\($apr[a-zA-Z0-9_]+\)(\S*)\s*/\n.BR "" "$1" "$2" "$5"\n/gm;
-                # handle cases like "[x](x), [y](y), [z](z)" being separated.
-                while($str =~ s/(\.BR[^\n]*)\n\n\.BR/$1\n.BR/gm) {}
+                $str =~ s/\[(\`?$apiprefixregex[a-zA-Z0-9_]+\`?)\]\($apiprefixregex[a-zA-Z0-9_]+\)/\n.BR $1\n/gms;
             }
 
             # links
             $str =~ s/\[(.*?)]\((https?\:\/\/.*?)\)/\n.URL "$2" "$1"\n/g;
 
             # <code></code> is also popular.  :/
-            $str =~ s/\s*(\S*?)\`([^\n]*?)\`(\S*)\s*/\n.BR "" "$1" "$2" "$3"\n/gms;
+            $str =~ s/\s*\`(.*?)\`\s*/\n.BR $1\n/gms;
 
             # bold+italic (this looks bad, just make it bold).
-            $str =~ s/\s*(\S*?)\*\*\*([^\n]*?)\*\*\*(\S*)\s*/\n.BR "" "$1" "$2" "$3"\n/gms;
+            $str =~ s/\s*\*\*\*(.*?)\*\*\*\s*/\n.B $1\n/gms;
 
             # bold
-            $str =~ s/\s*(\S*?)\*\*([^\n]*?)\*\*(\S*)\s*/\n.BR "" "$1" "$2" "$3"\n/gms;
+            $str =~ s/\s*\*\*(.*?)\*\*\s*/\n.B $1\n/gms;
 
             # italic
-            $str =~ s/\s*(\S*?)\*([^\n]*?)\*(\S*)\s*/\n.IR "" "$1" "$2" "$3"\n/gms;
-        }
+            $str =~ s/\s*\*(.*?)\*\s*/\n.I $1\n/gms;
 
-        # cleanup unnecessary quotes
-        $str =~ s/(\.[IB]R?)(.*?) ""\n/$1$2\n/gm;
-        $str =~ s/(\.[IB]R?) "" ""(.*?)\n/$1$2\n/gm;
-        $str =~ s/"(\S+)"/$1/gm;
-        # cleanup unnecessary whitespace
-        $str =~ s/ +\n/\n/gm;
+            # bullets
+            $str =~ s/^\- /\n\\\(bu /gm;
+        }
 
         if (defined $code) {
             $code =~ s/\A\n+//gms;
             $code =~ s/\n+\Z//gms;
-            $code =~ s/\\/\\(rs/gms;
             if ($dewikify_manpage_code_indent) {
                 $str .= "\n.IP\n"
             } else {
@@ -602,7 +580,7 @@ sub dewikify {
             $retval .= dewikify_chunk($wikitype, $1, $2, $3);
         }
     } elsif ($wikitype eq 'md') {
-        while ($str =~ s/\A(.*?)\n?```(.*?)\n(.*?)\n```\n//ms) {
+        while ($str =~ s/\A(.*?)\n```(.*?)\n(.*?)\n```\n//ms) {
             $retval .= dewikify_chunk($wikitype, $1, $2, $3);
         }
     }
@@ -1033,6 +1011,7 @@ sub generate_quickref {
 my $incpath = "$srcpath";
 $incpath .= "/$incsubdir" if $incsubdir ne '';
 
+my $wikireadmepath = "$wikipath/$wikireadmesubdir";
 my $readmepath = undef;
 if (defined $readmesubdir) {
     $readmepath = "$srcpath/$readmesubdir";
@@ -2081,15 +2060,18 @@ if ($copy_direction == 1) {  # --copy-to-headers
     }
 
     if (defined $readmepath) {
-        mkdir($readmepath);  # just in case
-        opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
-        while (readdir(DH)) {
-            my $dent = $_;
-            if ($dent =~ /\AREADME\-.*?\.md\Z/) {  # we only bridge Markdown files here that start with "README-".
-                filecopy("$wikipath/$dent", "$readmepath/$dent", "\n");
+        if ( -d $wikireadmepath ) {
+            mkdir($readmepath);  # just in case
+            opendir(DH, $wikireadmepath) or die("Can't opendir '$wikireadmepath': $!\n");
+            while (readdir(DH)) {
+                my $dent = $_;
+                if ($dent =~ /\A(.*?)\.md\Z/) {  # we only bridge Markdown files here.
+                    next if $1 eq 'FrontPage';
+                    filecopy("$wikireadmepath/$dent", "$readmepath/README-$dent", "\n");
+                }
             }
+            closedir(DH);
         }
-        closedir(DH);
     }
 
 } elsif ($copy_direction == -1) { # --copy-to-wiki
@@ -2694,27 +2676,31 @@ __EOF__
     # Write out READMEs...
     if (defined $readmepath) {
         if ( -d $readmepath ) {
-            mkdir($wikipath);  # just in case
+            mkdir($wikireadmepath);  # just in case
             opendir(DH, $readmepath) or die("Can't opendir '$readmepath': $!\n");
             while (my $d = readdir(DH)) {
                 my $dent = $d;
-                if ($dent =~ /\AREADME\-.*?\.md\Z/) {  # we only bridge Markdown files here that start with "README-".
-                    filecopy("$readmepath/$dent", "$wikipath/$dent", "\n");
+                if ($dent =~ /\AREADME\-(.*?\.md)\Z/) {  # we only bridge Markdown files here.
+                    my $wikifname = $1;
+                    next if $wikifname eq 'FrontPage.md';
+                    filecopy("$readmepath/$dent", "$wikireadmepath/$wikifname", "\n");
                 }
             }
             closedir(DH);
 
             my @pages = ();
-            opendir(DH, $wikipath) or die("Can't opendir '$wikipath': $!\n");
+            opendir(DH, $wikireadmepath) or die("Can't opendir '$wikireadmepath': $!\n");
             while (my $d = readdir(DH)) {
                 my $dent = $d;
-                if ($dent =~ /\A(README\-.*?)\.md\Z/) {
-                    push @pages, $1;
+                if ($dent =~ /\A(.*?)\.(mediawiki|md)\Z/) {
+                    my $wikiname = $1;
+                    next if $wikiname eq 'FrontPage';
+                    push @pages, $wikiname;
                 }
             }
             closedir(DH);
 
-            open(FH, '>', "$wikipath/READMEs.md") or die("Can't open '$wikipath/READMEs.md': $!\n");
+            open(FH, '>', "$wikireadmepath/FrontPage.md") or die("Can't open '$wikireadmepath/FrontPage.md': $!\n");
             print FH "# All READMEs available here\n\n";
             foreach (sort @pages) {
                 my $wikiname = $_;
@@ -2779,6 +2765,7 @@ __EOF__
         my $wikitype = $wikitypes{$sym};
         my $sectionsref = $wikisyms{$sym};
         my $remarks = $sectionsref->{'Remarks'};
+        my $params = $sectionsref->{'Function Parameters'};
         my $returns = $sectionsref->{'Return Value'};
         my $version = $sectionsref->{'Version'};
         my $threadsafety = $sectionsref->{'Thread Safety'};
@@ -2786,23 +2773,6 @@ __EOF__
         my $examples = $sectionsref->{'Code Examples'};
         my $deprecated = $sectionsref->{'Deprecated'};
         my $headerfile = $manpageheaderfiletext;
-
-        my $params = undef;
-
-        if ($symtype == -1) {  # category documentation block.
-            # nothing to be done here.
-        } elsif (($symtype == 1) || (($symtype == 5))) {  # we'll assume a typedef (5) with a \param is a function pointer typedef.
-            $params = $sectionsref->{'Function Parameters'};
-        } elsif ($symtype == 2) {
-            $params = $sectionsref->{'Macro Parameters'};
-        } elsif ($symtype == 3) {
-            $params = $sectionsref->{'Fields'};
-        } elsif ($symtype == 4) {
-            $params = $sectionsref->{'Values'};
-        } else {
-            die("Unexpected symtype $symtype");
-        }
-
         $headerfile =~ s/\%fname\%/$headersymslocation{$sym}/g;
         $headerfile .= "\n";
 
@@ -2869,22 +2839,18 @@ __EOF__
             $str .= dewikify($wikitype, $deprecated) . "\n";
         }
 
-        my $incfile = $mainincludefname;
         if (defined $headerfile) {
-            if($headerfile =~ /Defined in (.*)/) {
-                $incfile = $1;
-            }
+            $str .= ".SH HEADER FILE\n";
+            $str .= dewikify($wikitype, $headerfile) . "\n";
         }
 
         $str .= ".SH SYNOPSIS\n";
         $str .= ".nf\n";
-        $str .= ".B #include <$incfile>\n";
+        $str .= ".B #include \\(dq$mainincludefname\\(dq\n";
         $str .= ".PP\n";
 
         my @decllines = split /\n/, $decl;
         foreach (@decllines) {
-            $_ =~ s/\\/\\(rs/g;  # fix multiline macro defs
-            $_ =~ s/"/\\(dq/g;
             $str .= ".BI \"$_\n";
         }
         $str .= ".fi\n";
@@ -2972,11 +2938,8 @@ __EOF__
         }
 
         if (defined $returns) {
-            # Chop datatype in parentheses off the front.
-            if(!($returns =~ s/\A\([^\[]*\[[^\]]*\]\([^\)]*\)[^\)]*\) //ms)) {
-                $returns =~ s/\A\([^\)]*\) //ms;
-            }
             $returns = dewikify($wikitype, $returns);
+            $returns =~ s/\A\(.*?\)\s*//;  # Chop datatype in parentheses off the front.
             $str .= ".SH RETURN VALUE\n";
             $str .= "$returns\n";
         }
@@ -3012,8 +2975,6 @@ __EOF__
                 s/\A\/*//;
                 s/\A\.BR\s+//;  # dewikify added this, but we want to handle it.
                 s/\A\.I\s+//;  # dewikify added this, but we want to handle it.
-                s/\A\.PP\s*//;  # dewikify added this, but we want to handle it.
-                s/\\\(bu//;  # dewikify added this, but we want to handle it.
                 s/\A\s*[\:\*\-]\s*//;
                 s/\A\s+//;
                 s/\s+\Z//;
