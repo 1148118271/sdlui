@@ -1,0 +1,65 @@
+//
+// Created by Administrator on 25-6-1.
+//
+
+#include "Window.h"
+
+bool Window::show(const char *title, int x, int y, int w, int h) {
+    window_ = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
+    if (!window_) {
+        return false;
+    }
+    SDL_SetWindowPosition(window_, x, y);
+    renderer_ = SDL_CreateRenderer(window_, nullptr);
+    if (!renderer_) {
+        return false;
+    }
+
+    bool run = true;
+
+    while (run) {
+        SDL_WaitEvent(&event_);
+        switch (event_.type) {
+            case SDL_EVENT_QUIT: {
+                run = false;
+                break;
+            }
+            case SDL_EVENT_KEY_DOWN: {
+                run = event_.key.key != SDLK_ESCAPE;
+                break;
+            }
+        }
+        SDL_SetRenderDrawColor(renderer_, 16, 0, 16, 255);
+        SDL_RenderClear(renderer_);
+
+        draws();
+
+        SDL_RenderPresent(renderer_);
+    }
+    return true;
+}
+
+void Window::addWidget(Widget &widget) {
+    widgets_.push_back(&widget);
+}
+
+bool Window::draws() {
+    if (!widgets_.empty()) {
+        for (auto &widget: widgets_) {
+            widget->event(event_);
+            bool r = widget->draw(renderer_);
+            if (!r)
+                return false;
+        }
+    }
+    return true;
+}
+
+void Window::destroy() {
+    SDL_DestroyRenderer(renderer_);
+    SDL_DestroyWindow(window_);
+    SDL_Quit();
+}
+
+
+

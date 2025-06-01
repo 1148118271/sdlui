@@ -39,9 +39,13 @@ endif()
 # Add your sources to the target
 target_sources(${EXECUTABLE_NAME} 
 PRIVATE 
-    src/main.cpp
-    src/Button.cpp
-    src/Button.h
+        src/main.cpp
+        src/Window.cpp
+        src/Window.h
+        src/Widget.cpp
+        src/Widget.h
+        src/Button.cpp
+        src/Button.h
 )
 
 

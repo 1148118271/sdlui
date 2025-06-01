@@ -1188,15 +1188,10 @@ static bool Render_Line_##NAME(TTF_Font *font, SDL_Surface *textbuf, int xstart,
             int remainder;                                                                                              \
             Uint8 *saved_buffer = image->buffer;                                                                        \
             int saved_width = image->width;                                                                             \
-                                                                                                                        \
+            image->buffer += alignment;                                                                                 \
             /* Position updated after glyph rendering */                                                                \
             x = xstart + FT_FLOOR(x) + image->left;                                                                     \
             y = ystart + FT_FLOOR(y) - image->top;                                                                      \
-                                                                                                                        \
-            if (image->buffer == NULL) {                                                                                \
-                continue;                                                                                               \
-            }                                                                                                           \
-            image->buffer += alignment;                                                                                 \
                                                                                                                         \
             /* Make sure glyph is inside textbuf */                                                                     \
             above_w = x + image->width - textbuf->w;                                                                    \
@@ -1934,7 +1929,7 @@ static void TTF_CloseFontSource(SDL_IOStream *src)
 
 TTF_Font *TTF_OpenFontWithProperties(SDL_PropertiesID props)
 {
-    TTF_Font *existing_font = SDL_GetPointerProperty(props, TTF_PROP_FONT_CREATE_EXISTING_FONT_POINTER, NULL);
+    TTF_Font *existing_font = SDL_GetPointerProperty(props, TTF_PROP_FONT_CREATE_EXISTING_FONT, NULL);
     const char *file = SDL_GetStringProperty(props, TTF_PROP_FONT_CREATE_FILENAME_STRING, NULL);
     SDL_IOStream *src = SDL_GetPointerProperty(props, TTF_PROP_FONT_CREATE_IOSTREAM_POINTER, NULL);
     Sint64 src_offset = SDL_GetNumberProperty(props, TTF_PROP_FONT_CREATE_IOSTREAM_OFFSET_NUMBER, 0);
@@ -2214,7 +2209,7 @@ TTF_Font *TTF_CopyFont(TTF_Font *existing_font)
     TTF_Font *font = NULL;
     SDL_PropertiesID props = SDL_CreateProperties();
     if (props) {
-        SDL_SetPointerProperty(props, TTF_PROP_FONT_CREATE_EXISTING_FONT_POINTER, existing_font);
+        SDL_SetPointerProperty(props, TTF_PROP_FONT_CREATE_EXISTING_FONT, existing_font);
         font = TTF_OpenFontWithProperties(props);
         SDL_DestroyProperties(props);
     }
@@ -2950,11 +2945,11 @@ static bool Load_Glyph(TTF_Font *font, c_glyph *cached, int want, int translatio
                         if (mono) {
                             pixmap[col] |= pixmap[col-1];
                         } else {
-                            int pixelvalue = (pixmap[col] + pixmap[col-1]);
-                            if (pixelvalue > NUM_GRAYS - 1) {
-                                pixelvalue = NUM_GRAYS - 1;
+                            int pixel = (pixmap[col] + pixmap[col-1]);
+                            if (pixel > NUM_GRAYS - 1) {
+                                pixel = NUM_GRAYS - 1;
                             }
-                            pixmap[col] = (Uint8) pixelvalue;
+                            pixmap[col] = (Uint8) pixel;
                         }
                     }
                 }
