@@ -7,8 +7,14 @@
 
 int main(int argc, char* argv[]) {
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
-    Window window;
 
+
+    Window window;
+    window.setColor({232, 217, 217, 1});
+
+#ifdef _WIN32
+    window.loadFont("C:/Windows/Fonts/msyhl.ttc", 36);
+#endif
     Button btn(200, 200, 100, 50);
     window.addWidget(btn);
 

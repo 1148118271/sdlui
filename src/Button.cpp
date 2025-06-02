@@ -30,20 +30,29 @@ void Button::event(const SDL_Event &e) {
     }
 }
 
-bool Button::draw(SDL_Renderer *renderer) {
+bool Button::draw(SDL_Renderer *renderer, TTF_Font *font) {
     SDL_Log("draw");
     SDL_FColor color = normalColor_;
     if (pressed) color = pressedColor_;
     else if (hovered) color = hoverColor_;
     std::array<SDL_Vertex, 6> vertex = {
-        SDL_Vertex{ .position = {x_, y_},               .color = color, .tex_coord = {0.0f, 0.0f} },
-        SDL_Vertex{ .position = {x_, y_ + h_},          .color = color, .tex_coord = {0.0f, 0.0f} },
-        SDL_Vertex{ .position = {x_ + w_, y_},          .color = color, .tex_coord = {0.0f, 0.0f} },
-        SDL_Vertex{ .position = {x_, y_ + h_},          .color = color, .tex_coord = {0.0f, 0.0f} },
-        SDL_Vertex{ .position = {x_ + w_, y_},          .color = color, .tex_coord = {0.0f, 0.0f} },
-        SDL_Vertex{ .position = {x_ + w_, y_ + h_},     .color = color, .tex_coord = {0.0f, 0.0f} },
+        SDL_Vertex{ .position = {x_, y_},               .color = color,     .tex_coord = {0.0f, 0.0f} },
+        SDL_Vertex{ .position = {x_, y_ + h_},          .color = color,     .tex_coord = {0.0f, 1.0f} },
+        SDL_Vertex{ .position = {x_ + w_, y_},          .color = color,     .tex_coord = {1.0f, 0.0f} },
+        SDL_Vertex{ .position = {x_, y_ + h_},          .color = color,     .tex_coord = {0.0f, 1.0f} },
+        SDL_Vertex{ .position = {x_ + w_, y_},          .color = color,     .tex_coord = {1.0f, 0.0f} },
+        SDL_Vertex{ .position = {x_ + w_, y_ + h_},     .color = color,     .tex_coord = {1.0f, 1.0f} },
     };
-    return SDL_RenderGeometry(renderer, nullptr, vertex.data(), vertex.size(), nullptr, 0);
+//    SDL_RenderGeometry(renderer, nullptr, vertex.data(), vertex.size(), nullptr, 0);
+    const char* text = "button";
+//    SDL_Color fontColor = {0, 0, 0};
+    SDL_Color bg = Util::fColorToColor(color);
+    SDL_Color fg = { 0, 0, 0, 255 };
+    SDL_Surface* surface = TTF_RenderText_Shaded(font, text, strlen(text), fg, bg);  // 简单模式
+//    SDL_Surface* surface = TTF_RenderText_Solid(font, text, strlen(text), fg);  // 简单模式
+    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
+    return SDL_RenderGeometry(renderer, texture, vertex.data(), vertex.size(), nullptr, 0);
+    return false;
 }
 
 bool Button::contains(float x, float y) const {

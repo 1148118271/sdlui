@@ -2,9 +2,16 @@
 // Created by Administrator on 25-6-1.
 //
 
+
 #include "Window.h"
 
+
+
 bool Window::show(const char *title, int x, int y, int w, int h) {
+    if (!SDL_Init(SDL_INIT_VIDEO)) {
+        return false;
+    }
+
     window_ = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
     if (!window_) {
         return false;
@@ -14,9 +21,7 @@ bool Window::show(const char *title, int x, int y, int w, int h) {
     if (!renderer_) {
         return false;
     }
-
     bool run = true;
-
     while (run) {
         SDL_WaitEvent(&event_);
         switch (event_.type) {
@@ -29,7 +34,7 @@ bool Window::show(const char *title, int x, int y, int w, int h) {
                 break;
             }
         }
-        SDL_SetRenderDrawColor(renderer_, 16, 0, 16, 255);
+        SDL_SetRenderDrawColor(renderer_, color_.r, color_.g, color_.b, color_.a);
         SDL_RenderClear(renderer_);
 
         draws();
@@ -43,11 +48,15 @@ void Window::addWidget(Widget &widget) {
     widgets_.push_back(&widget);
 }
 
+void Window::setColor(SDL_Color color) {
+    color_ = color;
+}
+
 bool Window::draws() {
     if (!widgets_.empty()) {
         for (auto &widget: widgets_) {
             widget->event(event_);
-            bool r = widget->draw(renderer_);
+            bool r = widget->draw(renderer_, font_);
             if (!r)
                 return false;
         }
@@ -60,6 +69,16 @@ void Window::destroy() {
     SDL_DestroyWindow(window_);
     SDL_Quit();
 }
+
+bool Window::loadFont(const char *fontPath, float ptsize) {
+    if (!TTF_Init()) {
+        return false;
+    }
+
+    font_ = TTF_OpenFont(fontPath, ptsize);
+    return true;
+}
+
 
 
 

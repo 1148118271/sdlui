@@ -5,15 +5,17 @@
 #pragma once
 
 #include "Widget.h"
+#include "Util.hpp"
+#include "SDL3_ttf/SDL_ttf.h"
 #include <functional>
 
 
 class Button : public Widget {
 
 public:
-    SDL_FColor normalColor_{100.0f / 255.0f, 100.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f};
-    SDL_FColor hoverColor_{120.0f / 255.0f, 120.0f / 255.0f, 255.0f / 255.0f, 255.0f / 255.0f};
-    SDL_FColor pressedColor_{80.0f / 255.0f, 80.0f / 255.0f, 200.0f / 255.0f, 255.0f / 255.0f};
+    SDL_FColor normalColor_ = Util::colorToFColor({232, 201, 201, 255});
+    SDL_FColor hoverColor_ = Util::colorToFColor({120, 120, 255, 255});
+    SDL_FColor pressedColor_= Util::colorToFColor({80, 80, 200, 255});
 
     float x_;
     float y_;
@@ -25,11 +27,11 @@ public:
 
     std::function<void()> onClick;
 
-    Button(float x, float y, float w, float h);
+    explicit Button(float x, float y, float w, float h);
 
     void event(const SDL_Event &e) override;
 
-    bool draw(SDL_Renderer *renderer) override;
+    bool draw(SDL_Renderer *renderer, TTF_Font *font) override;
 
 
 private:

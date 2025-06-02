@@ -42,6 +42,8 @@ PRIVATE
         src/main.cpp
         src/Window.cpp
         src/Window.h
+        src/FontStyle.cpp
+        src/FontStyle.h
         src/Widget.cpp
         src/Widget.h
         src/Button.cpp
