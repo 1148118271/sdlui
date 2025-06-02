@@ -65,8 +65,15 @@ bool Window::draws() {
 }
 
 void Window::destroy() {
+    if (!widgets_.empty()) {
+        for (auto &widget: widgets_) {
+            widget->destroy();
+        }
+    }
+    TTF_CloseFont(font_);
     SDL_DestroyRenderer(renderer_);
     SDL_DestroyWindow(window_);
+    TTF_Quit();
     SDL_Quit();
 }
 

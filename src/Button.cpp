@@ -4,10 +4,11 @@
 
 #include <array>
 #include "Button.h"
+#include "FontStyle.h"
 
 
-Button::Button(float x, float y, float w, float h)
-    : x_(x), y_(y), w_(w), h_(h)
+Button::Button(const char* text, float x, float y, float w, float h)
+    : text_(text), x_(x), y_(y), w_(w), h_(h)
 {}
 
 void Button::event(const SDL_Event &e) {
@@ -43,19 +44,24 @@ bool Button::draw(SDL_Renderer *renderer, TTF_Font *font) {
         SDL_Vertex{ .position = {x_ + w_, y_},          .color = color,     .tex_coord = {1.0f, 0.0f} },
         SDL_Vertex{ .position = {x_ + w_, y_ + h_},     .color = color,     .tex_coord = {1.0f, 1.0f} },
     };
-//    SDL_RenderGeometry(renderer, nullptr, vertex.data(), vertex.size(), nullptr, 0);
-    const char* text = "button";
-//    SDL_Color fontColor = {0, 0, 0};
-    SDL_Color bg = Util::fColorToColor(color);
-    SDL_Color fg = { 0, 0, 0, 255 };
-    SDL_Surface* surface = TTF_RenderText_Shaded(font, text, strlen(text), fg, bg);  // 简单模式
-//    SDL_Surface* surface = TTF_RenderText_Solid(font, text, strlen(text), fg);  // 简单模式
-    SDL_Texture* texture = SDL_CreateTextureFromSurface(renderer, surface);
-    return SDL_RenderGeometry(renderer, texture, vertex.data(), vertex.size(), nullptr, 0);
-    return false;
+    if (texture_ == nullptr) {
+        texture_ = FontStyle::renderText(renderer, font, text_, fontColor_, Util::fColorToColor(color));
+    }
+    return SDL_RenderGeometry(renderer, texture_, vertex.data(), vertex.size(), nullptr, 0);
 }
 
 bool Button::contains(float x, float y) const {
     return x >= x_ && x <= x_ + w_ &&
            y >= y_ && y <= y_ + h_;
+}
+
+void Button::setFontColor(SDL_Color color) {
+    fontColor_ = color;
+}
+
+void Button::destroy() {
+    if (texture_ != nullptr) {
+        SDL_DestroyTexture(texture_);
+        texture_ = nullptr;
+    }
 }

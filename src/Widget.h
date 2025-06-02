@@ -13,5 +13,6 @@ public:
 
     virtual bool draw(SDL_Renderer *renderer, TTF_Font *font) = 0;
 
+    virtual void destroy() = 0;
 };
 
