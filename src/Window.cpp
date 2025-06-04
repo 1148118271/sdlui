@@ -5,13 +5,10 @@
 
 #include "Window.h"
 
-
-
 bool Window::show(const char *title, int x, int y, int w, int h) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
         return false;
     }
-
     window_ = SDL_CreateWindow(title, w, h, SDL_WINDOW_RESIZABLE);
     if (!window_) {
         return false;

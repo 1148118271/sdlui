@@ -9,16 +9,18 @@ int main(int argc, char* argv[]) {
     SDL_SetLogPriorities(SDL_LOG_PRIORITY_VERBOSE);
 
 
+
     Window window;
     window.setColor({232, 217, 217, 1});
 
 #ifdef _WIN32
-    window.loadFont("C:/Windows/Fonts/msyhl.ttc", 45);
+    window.loadFont("C:/Windows/Fonts/msyhl.ttc", 50);
 #endif
-    Button btn("点击", 200, 200, 100, 50);
+    Button btn("点 击", 200, 200, 100, 50);
+
 
     btn.onClick = []() {
-        SDL_Log("的吗徐阿姨");
+        std::cout << "sssss" << std::endl;
     };
 
     window.addWidget(btn);

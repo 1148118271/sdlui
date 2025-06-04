@@ -18,17 +18,10 @@ public:
     SDL_FColor normalColor_ = Util::colorToFColor({232, 201, 201, 255});
     SDL_FColor hoverColor_ = Util::colorToFColor({120, 120, 255, 255});
     SDL_FColor pressedColor_= Util::colorToFColor({80, 80, 200, 255});
-
     SDL_Color fontColor_ = { 0, 0, 0, 255 };
-
+    SDL_FRect rect_;
+    std::optional<SDL_FRect> textRect_;
     const char* text_;
-
-    SDL_Texture* texture_ = nullptr;
-
-    float x_;
-    float y_;
-    float w_;
-    float h_;
 
     bool hovered = false;
     bool pressed = false;
@@ -46,5 +39,5 @@ public:
     void destroy() override;
 
 private:
-    bool contains(float x, float y) const;
+    [[nodiscard]] bool contains(float x, float y) const;
 };

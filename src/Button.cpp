@@ -2,13 +2,12 @@
 // Created by Administrator on 25-5-31.
 //
 
-#include <array>
 #include "Button.h"
 #include "FontStyle.h"
 
 
 Button::Button(const char* text, float x, float y, float w, float h)
-    : text_(text), x_(x), y_(y), w_(w), h_(h)
+    : text_(text), rect_(x, y, w, h), textRect_(std::nullopt)
 {}
 
 void Button::event(const SDL_Event &e) {
@@ -36,23 +35,50 @@ bool Button::draw(SDL_Renderer *renderer, TTF_Font *font) {
     SDL_FColor color = normalColor_;
     if (pressed) color = pressedColor_;
     else if (hovered) color = hoverColor_;
-    std::array<SDL_Vertex, 6> vertex = {
-        SDL_Vertex{ .position = {x_, y_},               .color = color,     .tex_coord = {0.0f, 0.0f} },
-        SDL_Vertex{ .position = {x_, y_ + h_},          .color = color,     .tex_coord = {0.0f, 1.0f} },
-        SDL_Vertex{ .position = {x_ + w_, y_},          .color = color,     .tex_coord = {1.0f, 0.0f} },
-        SDL_Vertex{ .position = {x_, y_ + h_},          .color = color,     .tex_coord = {0.0f, 1.0f} },
-        SDL_Vertex{ .position = {x_ + w_, y_},          .color = color,     .tex_coord = {1.0f, 0.0f} },
-        SDL_Vertex{ .position = {x_ + w_, y_ + h_},     .color = color,     .tex_coord = {1.0f, 1.0f} },
-    };
-    if (texture_ == nullptr) {
-        texture_ = FontStyle::renderText(renderer, font, text_, fontColor_, Util::fColorToColor(color));
-    }
-    return SDL_RenderGeometry(renderer, texture_, vertex.data(), vertex.size(), nullptr, 0);
+    SDL_Texture *texture = FontStyle::renderText(renderer, font, text_, fontColor_, Util::fColorToColor(color));
+
+
+    SDL_Log("texture w: %d, h: %d, rect_ w: %f, rect_ h: %f  -----", texture->w, texture->h, rect_.w, rect_.h);
+
+    float originalSize = TTF_GetFontSize(font);
+
+    float currentSize = ((rect_.w + rect_.h) - (20.f * 2.f)) / 4;
+
+
+    TTF_SetFontSize(font, currentSize);
+
+
+    SDL_Log("texture w: %d, h: %d, rect_ w: %f, rect_ h: %f ======", texture->w, texture->h, rect_.w, rect_.h);
+
+//    if (!textRect_) {
+//        SDL_FRect textRect = {};
+//        textRect.w = (float) texture->w;
+//        textRect.h = (float) texture->h;
+//        textRect.x = rect_.x + ((rect_.w - textRect.w) / 2);
+//        textRect.y = rect_.y + ((rect_.h - textRect.h) / 2);
+//        textRect_ = textRect;
+//    }
+//
+//    SDL_Log("font size %f", textRect_->w);
+
+
+    SDL_FRect textRect = {};
+    textRect.w = (float) texture->w;
+    textRect.h = (float) texture->h;
+    textRect.x = rect_.x + ((rect_.w - textRect.w) / 2);
+    textRect.y = rect_.y + ((rect_.h - textRect.h) / 2);
+
+    SDL_SetRenderDrawColorFloat(renderer, color.r, color.g, color.b, color.a);
+    SDL_RenderFillRect(renderer, &rect_);
+    SDL_RenderTexture(renderer, texture, nullptr, &textRect);
+    SDL_DestroyTexture(texture);
+//    TTF_SetFontSize(font, originalSize);
+    return true;
 }
 
 bool Button::contains(float x, float y) const {
-    return x >= x_ && x <= x_ + w_ &&
-           y >= y_ && y <= y_ + h_;
+    return x >= rect_.x && x <= rect_.x + rect_.w &&
+           y >= rect_.y && y <= rect_.y + rect_.h;
 }
 
 void Button::setFontColor(SDL_Color color) {
@@ -60,8 +86,5 @@ void Button::setFontColor(SDL_Color color) {
 }
 
 void Button::destroy() {
-    if (texture_ != nullptr) {
-        SDL_DestroyTexture(texture_);
-        texture_ = nullptr;
-    }
+
 }
