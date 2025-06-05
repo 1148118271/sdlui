@@ -11,12 +11,12 @@ int main(int argc, char* argv[]) {
 
 
     Window window;
-    window.setColor({232, 217, 217, 1});
+    window.setColor({255, 255, 255, 255});
 
 #ifdef _WIN32
-    window.loadFont("C:/Windows/Fonts/msyhl.ttc", 50);
+    window.loadFont("C:/Windows/Fonts/msyhl.ttc");
 #endif
-    Button btn("点 击", 200, 200, 100, 50);
+    Button btn("点击", 200, 200, 90, 40);
 
 
     btn.onClick = []() {

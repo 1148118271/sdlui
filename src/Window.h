@@ -12,7 +12,6 @@ class Window {
 private:
    std::vector<Widget*> widgets_{};
    SDL_Window* window_{};
-   TTF_Font *font_;
    SDL_Renderer *renderer_{};
    SDL_Event event_{};
    SDL_Color color_ {16, 0, 16, 255};
@@ -20,7 +19,7 @@ private:
 public:
     bool show(const char *title, int x, int y, int w, int h);
 
-    bool loadFont(const char *fontPath, float ptsize);
+    bool loadFont(const char *fontPath);
 
     void destroy();
 

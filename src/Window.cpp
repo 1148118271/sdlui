@@ -4,6 +4,7 @@
 
 
 #include "Window.h"
+#include "Font.h"
 
 bool Window::show(const char *title, int x, int y, int w, int h) {
     if (!SDL_Init(SDL_INIT_VIDEO)) {
@@ -53,7 +54,7 @@ bool Window::draws() {
     if (!widgets_.empty()) {
         for (auto &widget: widgets_) {
             widget->event(event_);
-            bool r = widget->draw(renderer_, font_);
+            bool r = widget->draw(renderer_);
             if (!r)
                 return false;
         }
@@ -67,19 +68,19 @@ void Window::destroy() {
             widget->destroy();
         }
     }
-    TTF_CloseFont(font_);
+
+    Font::close();
     SDL_DestroyRenderer(renderer_);
     SDL_DestroyWindow(window_);
     TTF_Quit();
     SDL_Quit();
 }
 
-bool Window::loadFont(const char *fontPath, float ptsize) {
+bool Window::loadFont(const char *fontPath) {
     if (!TTF_Init()) {
         return false;
     }
-
-    font_ = TTF_OpenFont(fontPath, ptsize);
+    Font::setFontPath(fontPath);
     return true;
 }
 

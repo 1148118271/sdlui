@@ -48,6 +48,8 @@ PRIVATE
         src/Widget.h
         src/Button.cpp
         src/Button.h
+        src/Font.cpp
+        src/Font.h
 )
 
 
