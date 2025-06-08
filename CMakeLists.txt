@@ -59,7 +59,7 @@ PRIVATE
 target_compile_features(${EXECUTABLE_NAME} PUBLIC cxx_std_20)
 
 if (MSVC)
-    target_compile_options(sdl-min PRIVATE /utf-8)
+    target_compile_options(${EXECUTABLE_NAME} PRIVATE /utf-8)
 endif()
 
 # Configure SDL by calling its CMake file.
