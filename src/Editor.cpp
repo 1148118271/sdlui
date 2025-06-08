@@ -33,7 +33,7 @@ void Editor::event(const SDL_Event &event) {
             // 鼠标左键
             if (SDL_BUTTON_LEFT == event.button.button) {
                 SDL_Log("------------- 鼠标按下 x: %f, y: %f", event.button.x, event.button.y);
-                if (lineStyle_.h_ != 0) {
+                if (lineStyle_.h_ != 0.f) {
                     cursorY_ = (int) (event.button.y / lineStyle_.h_);
                     if (cursorY_ > lines_.size() - 1) {
                         cursorY_ = (int) lines_.size() - 1;
