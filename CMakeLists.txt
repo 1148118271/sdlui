@@ -50,6 +50,8 @@ PRIVATE
         src/Button.h
         src/Font.cpp
         src/Font.h
+        src/Editor.cpp
+        src/Editor.h
 )
 
 

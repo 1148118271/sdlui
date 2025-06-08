@@ -38,6 +38,8 @@ bool Window::show(const char *title, int x, int y, int w, int h) {
         draws();
 
         SDL_RenderPresent(renderer_);
+
+        SDL_Delay(16);
     }
     return true;
 }
@@ -82,6 +84,12 @@ bool Window::loadFont(const char *fontPath) {
     }
     Font::setFontPath(fontPath);
     return true;
+}
+
+Size Window::getSize() {
+    Size size{};
+    SDL_GetWindowSizeInPixels(window_, &(size.w), &(size.h));
+    return size;
 }
 
 

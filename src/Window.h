@@ -7,6 +7,13 @@
 #include <SDL3_ttf/SDL_ttf.h>
 #include <vector>
 
+
+struct Size {
+    int w;
+    int h;
+};
+
+
 class Window {
 
 private:
@@ -26,6 +33,8 @@ public:
     void setColor(SDL_Color color);
 
     void addWidget(Widget &widget);
+
+    Size getSize();
 
 private:
     bool draws();
